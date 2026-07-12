@@ -1,0 +1,42 @@
+# Секреты
+.env
+.env.local
+*.key
+*.pem
+
+# База данных
+*.db
+*.sqlite
+*.sqlite3
+
+# Логи
+*.log
+log/
+
+# Бинарники
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+nail_bot
+Nail_bot
+telegram-deepseek-bot
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Go
+go.sum
+vendor/
+
+# Временные файлы
+tmp/
+temp/
