@@ -337,3 +337,66 @@ func (h *BookingHandler) ConfirmCancelBooking(chatID int64, data string) error {
 	_, err = h.Bot.Send(msg)
 	return err
 }
+
+// 13 июля
+// SendReport отправляет PDF-отчёт админу
+func (h *BookingHandler) SendReport(chatID int64) error {
+	reportService := &services.ReportService{}
+
+	// Получаем записи
+	bookings, err := reportService.GetBookingsForNext3Days()
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatID, "❌ Ошибка при получении записей")
+		_, err := h.Bot.Send(msg)
+		return err
+	}
+
+	// Генерируем PDF
+	pdfData, err := reportService.GenerateReport(bookings)
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatID, "❌ Ошибка при генерации отчёта")
+		_, err := h.Bot.Send(msg)
+		return err
+	}
+
+	// Отправляем PDF
+	file := tgbotapi.FileBytes{
+		Name:  "report.pdf",
+		Bytes: pdfData,
+	}
+
+	msg := tgbotapi.NewDocument(chatID, file)
+	msg.Caption = fmt.Sprintf("📊 Отчёт на 3 дня\nВсего записей: %d", len(bookings))
+
+	_, err = h.Bot.Send(msg)
+	return err
+}
+
+// 13.07
+// ShowAllBookings показывает все записи админу
+func (h *BookingHandler) ShowAllBookings(chatID int64) error {
+	bookings, err := h.BookingService.GetAllBookings()
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatID, "❌ Ошибка при получении записей")
+		_, err := h.Bot.Send(msg)
+		return err
+	}
+
+	if len(bookings) == 0 {
+		msg := tgbotapi.NewMessage(chatID, "📭 Нет активных записей.")
+		_, err := h.Bot.Send(msg)
+		return err
+	}
+
+	var text string
+	text = "📋 *Все записи:*\n\n"
+	for i, b := range bookings {
+		text += fmt.Sprintf("%d. *%s* | %s %s\n   👤 %s | 📱 %s\n   🆔 %d\n\n",
+			i+1, b.Service, b.Date, b.Time, b.ClientName, b.Phone, b.ID)
+	}
+
+	msg := tgbotapi.NewMessage(chatID, text)
+	msg.ParseMode = "Markdown"
+	_, err = h.Bot.Send(msg)
+	return err
+}

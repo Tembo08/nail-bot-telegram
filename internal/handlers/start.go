@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"nail_bot/configs"
 	"nail_bot/internal/keyboards"
 	"strings"
 
@@ -26,6 +27,8 @@ func (h *MessageHandler) HandleMessage(message *tgbotapi.Message) error {
 	chatID := message.Chat.ID
 	text := message.Text
 
+	cfg := configs.LoadConfig()
+
 	// Проверяем, есть ли активная сессия в состоянии contact
 	if h.BookingHandler != nil {
 		session, _ := h.BookingHandler.SessionService.GetSession(chatID)
@@ -47,6 +50,18 @@ func (h *MessageHandler) HandleMessage(message *tgbotapi.Message) error {
 	}
 
 	switch text {
+
+	// 13 июля
+	case "/report":
+		// Проверяем, что это админ
+		cfg := configs.LoadConfig()
+		if chatID != cfg.AdminID {
+			msg := tgbotapi.NewMessage(chatID, "⛔ У вас нет прав на эту команду.")
+			_, err := h.Bot.Send(msg)
+			return err
+		}
+		return h.BookingHandler.SendReport(chatID)
+
 	case "📅 Записаться":
 		return h.BookingHandler.StartBooking(chatID)
 	case "📋 Мои записи":
@@ -69,6 +84,41 @@ func (h *MessageHandler) HandleMessage(message *tgbotapi.Message) error {
 			"🌐 @nail_studio")
 		_, err := h.Bot.Send(msg)
 		return err
+
+	//13.07
+	case "📊 Отчёт":
+		if chatID != cfg.AdminID {
+			msg := tgbotapi.NewMessage(chatID, "⛔ У вас нет прав.")
+			_, err := h.Bot.Send(msg)
+			return err
+		}
+		return h.BookingHandler.SendReport(chatID)
+
+	case "📋 Все записи":
+		if chatID != cfg.AdminID {
+			msg := tgbotapi.NewMessage(chatID, "⛔ У вас нет прав.")
+			_, err := h.Bot.Send(msg)
+			return err
+		}
+		return h.BookingHandler.ShowAllBookings(chatID)
+
+	case "🔙 Выход из админ-панели":
+		msg := tgbotapi.NewMessage(chatID, "🔙 Возврат в главное меню")
+		msg.ReplyMarkup = keyboards.MainMenu()
+		_, err := h.Bot.Send(msg)
+		return err
+
+	case "/admin":
+		if chatID != cfg.AdminID {
+			msg := tgbotapi.NewMessage(chatID, "⛔ У вас нет прав.")
+			_, err := h.Bot.Send(msg)
+			return err
+		}
+		msg := tgbotapi.NewMessage(chatID, "👋 Добро пожаловать в админ-панель!")
+		msg.ReplyMarkup = keyboards.AdminMenu()
+		_, err := h.Bot.Send(msg)
+		return err
+
 	default:
 		// Если пользователь ввёл что-то другое — показываем меню
 		msg := tgbotapi.NewMessage(chatID, "🔽 Используйте кнопки меню:")

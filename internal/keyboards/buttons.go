@@ -133,3 +133,17 @@ func CancelConfirmKeyboard(bookingID uint) tgbotapi.InlineKeyboardMarkup {
 		),
 	)
 }
+
+// 13.07
+// AdminMenu - клавиатура для админа
+func AdminMenu() tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("📊 Отчёт"),
+			tgbotapi.NewKeyboardButton("📋 Все записи"),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("🔙 Выход из админ-панели"),
+		),
+	)
+}
