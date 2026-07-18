@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"nail_bot/internal/models"
 	"nail_bot/internal/storage"
+	"os"
 	"time"
 
 	"github.com/jung-kurt/gofpdf"
@@ -12,7 +13,6 @@ import (
 
 type ReportService struct{}
 
-// GetBookingsForNext3Days возвращает записи на ближайшие 3 дня
 func (s *ReportService) GetBookingsForNext3Days() ([]models.Booking, error) {
 	var bookings []models.Booking
 	today := time.Now().Format("2006-01-02")
@@ -26,25 +26,44 @@ func (s *ReportService) GetBookingsForNext3Days() ([]models.Booking, error) {
 	return bookings, result.Error
 }
 
-// GenerateReport генерирует PDF-отчёт с записями
 func (s *ReportService) GenerateReport(bookings []models.Booking) ([]byte, error) {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
 
-	// Используем стандартный шрифт
-	pdf.SetFont("Arial", "B", 16)
-	pdf.Cell(40, 10, "Report for 3 days")
-	pdf.Ln(12)
+	// Путь к шрифту Liberation Sans (поддерживает кириллицу)
+	fontPath := "fonts/LiberationSans-Regular.ttf"
 
-	pdf.SetFont("Arial", "", 12)
-	pdf.Cell(40, 10, fmt.Sprintf("Date: %s", time.Now().Format("02.01.2006")))
+	// Проверяем, что файл шрифта существует
+	if _, err := os.Stat(fontPath); os.IsNotExist(err) {
+		// Если шрифта нет — используем Helvetica (без кириллицы)
+		pdf.SetFont("Helvetica", "", 16)
+		pdf.Cell(40, 10, "Report for 3 days")
+		pdf.Ln(12)
+		pdf.SetFont("Helvetica", "", 12)
+		pdf.Cell(40, 10, fmt.Sprintf("Date: %s", time.Now().Format("02.01.2006")))
+	} else {
+		// Регистрируем шрифт с поддержкой UTF-8
+		pdf.AddUTF8Font("Liberation", "", fontPath)
+
+		// Заголовок (русский)
+		pdf.SetFont("Liberation", "", 16)
+		pdf.Cell(40, 10, "Отчёт о записях на 3 дня")
+		pdf.Ln(12)
+
+		pdf.SetFont("Liberation", "", 12)
+		pdf.Cell(40, 10, fmt.Sprintf("Дата отчёта: %s", time.Now().Format("02.01.2006")))
+	}
 	pdf.Ln(15)
 
 	if len(bookings) == 0 {
-		pdf.SetFont("Arial", "B", 14)
-		pdf.Cell(40, 10, "No active bookings for the next 3 days.")
+		if _, err := os.Stat(fontPath); err == nil {
+			pdf.SetFont("Liberation", "", 14)
+			pdf.Cell(40, 10, "Нет активных записей на ближайшие 3 дня.")
+		} else {
+			pdf.SetFont("Helvetica", "", 14)
+			pdf.Cell(40, 10, "No active bookings for the next 3 days.")
+		}
 
-		// Используем bytes.Buffer для получения данных
 		var buf bytes.Buffer
 		err := pdf.Output(&buf)
 		if err != nil {
@@ -53,16 +72,24 @@ func (s *ReportService) GenerateReport(bookings []models.Booking) ([]byte, error
 		return buf.Bytes(), nil
 	}
 
-	// Заголовки таблицы (на английском)
-	pdf.SetFont("Arial", "B", 12)
-	pdf.CellFormat(30, 8, "Date", "1", 0, "C", false, 0, "")
-	pdf.CellFormat(25, 8, "Time", "1", 0, "C", false, 0, "")
-	pdf.CellFormat(35, 8, "Service", "1", 0, "C", false, 0, "")
-	pdf.CellFormat(40, 8, "Client", "1", 0, "C", false, 0, "")
-	pdf.CellFormat(40, 8, "Phone", "1", 1, "C", false, 0, "")
+	// Заголовки таблицы
+	if _, err := os.Stat(fontPath); err == nil {
+		pdf.SetFont("Liberation", "", 12)
+	} else {
+		pdf.SetFont("Helvetica", "", 12)
+	}
+	pdf.CellFormat(30, 8, "Дата", "1", 0, "C", false, 0, "")
+	pdf.CellFormat(25, 8, "Время", "1", 0, "C", false, 0, "")
+	pdf.CellFormat(35, 8, "Услуга", "1", 0, "C", false, 0, "")
+	pdf.CellFormat(40, 8, "Клиент", "1", 0, "C", false, 0, "")
+	pdf.CellFormat(40, 8, "Телефон", "1", 1, "C", false, 0, "")
 
 	// Данные
-	pdf.SetFont("Arial", "", 11)
+	if _, err := os.Stat(fontPath); err == nil {
+		pdf.SetFont("Liberation", "", 11)
+	} else {
+		pdf.SetFont("Helvetica", "", 11)
+	}
 	for _, b := range bookings {
 		pdf.CellFormat(30, 8, b.Date, "1", 0, "C", false, 0, "")
 		pdf.CellFormat(25, 8, b.Time, "1", 0, "C", false, 0, "")
@@ -73,10 +100,14 @@ func (s *ReportService) GenerateReport(bookings []models.Booking) ([]byte, error
 
 	// Итого
 	pdf.Ln(10)
-	pdf.SetFont("Arial", "B", 12)
-	pdf.Cell(40, 10, fmt.Sprintf("Total bookings: %d", len(bookings)))
+	if _, err := os.Stat(fontPath); err == nil {
+		pdf.SetFont("Liberation", "", 12)
+		pdf.Cell(40, 10, fmt.Sprintf("Всего записей: %d", len(bookings)))
+	} else {
+		pdf.SetFont("Helvetica", "", 12)
+		pdf.Cell(40, 10, fmt.Sprintf("Total bookings: %d", len(bookings)))
+	}
 
-	// Используем bytes.Buffer для получения данных
 	var buf bytes.Buffer
 	err := pdf.Output(&buf)
 	if err != nil {

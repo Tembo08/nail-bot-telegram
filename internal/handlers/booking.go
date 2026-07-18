@@ -346,18 +346,24 @@ func (h *BookingHandler) SendReport(chatID int64) error {
 	// Получаем записи
 	bookings, err := reportService.GetBookingsForNext3Days()
 	if err != nil {
+		log.Printf("❌ Ошибка при получении записей: %v", err)
 		msg := tgbotapi.NewMessage(chatID, "❌ Ошибка при получении записей")
 		_, err := h.Bot.Send(msg)
 		return err
 	}
 
+	log.Printf("📊 Найдено записей для отчёта: %d", len(bookings))
+
 	// Генерируем PDF
 	pdfData, err := reportService.GenerateReport(bookings)
 	if err != nil {
-		msg := tgbotapi.NewMessage(chatID, "❌ Ошибка при генерации отчёта")
+		log.Printf("❌ Ошибка при генерации отчёта: %v", err)
+		msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Ошибка при генерации отчёта: %v", err))
 		_, err := h.Bot.Send(msg)
 		return err
 	}
+
+	log.Printf("✅ PDF сгенерирован, размер: %d байт", len(pdfData))
 
 	// Отправляем PDF
 	file := tgbotapi.FileBytes{
@@ -369,7 +375,13 @@ func (h *BookingHandler) SendReport(chatID int64) error {
 	msg.Caption = fmt.Sprintf("📊 Отчёт на 3 дня\nВсего записей: %d", len(bookings))
 
 	_, err = h.Bot.Send(msg)
-	return err
+	if err != nil {
+		log.Printf("❌ Ошибка при отправке PDF: %v", err)
+		return err
+	}
+
+	log.Printf("✅ Отчёт отправлен успешно")
+	return nil
 }
 
 // 13.07
