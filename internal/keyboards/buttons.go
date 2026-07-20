@@ -27,11 +27,11 @@ func ServicesMenu() tgbotapi.InlineKeyboardMarkup {
 	return tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("💅 Маникюр", "service_manicure"),
-			tgbotapi.NewInlineKeyboardButtonData("💅 Педикюр", "service_pedicure"),
+			tgbotapi.NewInlineKeyboardButtonData("🦶 Педикюр", "service_pedicure"),
 		),
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("💅 Дизайн", "service_design"),
-			tgbotapi.NewInlineKeyboardButtonData("💅 Наращивание", "service_extension"),
+			tgbotapi.NewInlineKeyboardButtonData("🎨 Дизайн", "service_design"),
+			tgbotapi.NewInlineKeyboardButtonData("💪 Наращивание", "service_extension"),
 		),
 	)
 }
