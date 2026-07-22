@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: nail_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nail_bot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bot:
+    build: .
+    container_name: nail_bot
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      DB_CONNECTION_STRING: postgres://postgres:postgres@postgres:5432/nail_bot?sslmode=disable
+      ADMIN_ID: ${ADMIN_ID}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    ports:
+      - "36060:36060"
+
+volumes:
+  postgres_data:

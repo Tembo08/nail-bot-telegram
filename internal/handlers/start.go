@@ -80,8 +80,11 @@ func (h *MessageHandler) HandleMessage(message *tgbotapi.Message) error {
 		h.BookingHandler.SessionService.DeleteSession(chatID)
 		msg := tgbotapi.NewMessage(chatID, "📞 Контакты:\n\n"+
 			"📱 +7 (999) 123-45-67\n"+
-			"📍 ул. Красивая, д. 1\n"+
+			"📍 ул. Губаревича, д. 5\n"+
 			"🌐 @nail_studio")
+
+		msg.ReplyMarkup = keyboards.ContactKeyboard()
+
 		_, err := h.Bot.Send(msg)
 		return err
 

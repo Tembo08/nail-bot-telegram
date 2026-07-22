@@ -147,3 +147,20 @@ func AdminMenu() tgbotapi.ReplyKeyboardMarkup {
 		),
 	)
 }
+
+func ContactKeyboard() tgbotapi.InlineKeyboardMarkup {
+	return tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonURL(
+				"📍 Яндекс.Карты",
+				"https://yandex.ru/maps/?text=ул. г.Элиста ул. Губаревича, д. 5",
+			),
+		),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonURL(
+				"📍 Google Карты",
+				"https://www.google.com/maps/search/?api=1&query=ул. г.Элиста ул. Губаревича, д. 5",
+			),
+		),
+	)
+}
