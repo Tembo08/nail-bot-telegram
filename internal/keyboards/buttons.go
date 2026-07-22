@@ -12,12 +12,15 @@ import (
 func MainMenu() tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("🚀 Начать"),
 			tgbotapi.NewKeyboardButton("📅 Записаться"),
+		),
+		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("📋 Мои записи"),
+			tgbotapi.NewKeyboardButton("📞 Контакты"),
 		),
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("ℹ️ О нас"),
-			tgbotapi.NewKeyboardButton("📞 Контакты"),
 		),
 	)
 }
@@ -98,7 +101,6 @@ func ConfirmKeyboard() tgbotapi.InlineKeyboardMarkup {
 	)
 }
 
-// 12 июля
 // BookingKeyboard создаёт inline-клавиатуру с записями
 func BookingKeyboard(bookings []models.Booking) tgbotapi.InlineKeyboardMarkup {
 	var rows [][]tgbotapi.InlineKeyboardButton
@@ -134,7 +136,6 @@ func CancelConfirmKeyboard(bookingID uint) tgbotapi.InlineKeyboardMarkup {
 	)
 }
 
-// 13.07
 // AdminMenu - клавиатура для админа
 func AdminMenu() tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
@@ -148,6 +149,7 @@ func AdminMenu() tgbotapi.ReplyKeyboardMarkup {
 	)
 }
 
+// ContactKeyboard - клавиатура с картами
 func ContactKeyboard() tgbotapi.InlineKeyboardMarkup {
 	return tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(

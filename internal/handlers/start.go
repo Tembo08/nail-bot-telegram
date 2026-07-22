@@ -10,7 +10,7 @@ import (
 
 type MessageHandler struct {
 	Bot            *tgbotapi.BotAPI
-	BookingHandler *BookingHandler // ← добавляем это поле
+	BookingHandler *BookingHandler
 }
 
 func (h *MessageHandler) Start(message *tgbotapi.Message) error {
@@ -38,10 +38,10 @@ func (h *MessageHandler) HandleMessage(message *tgbotapi.Message) error {
 				text == "📅 Записаться" ||
 				text == "📋 Мои записи" ||
 				text == "ℹ️ О нас" ||
-				text == "📞 Контакты" {
+				text == "📞 Контакты" ||
+				text == "🚀 Начать" {
 				// Если это команда — отменяем сессию и обрабатываем как обычно
 				h.BookingHandler.SessionService.DeleteSession(chatID)
-				// Продолжаем выполнение (выходим из условия)
 			} else {
 				// Это ввод контакта
 				return h.BookingHandler.HandleContactInput(chatID, text)
@@ -51,9 +51,7 @@ func (h *MessageHandler) HandleMessage(message *tgbotapi.Message) error {
 
 	switch text {
 
-	// 13 июля
 	case "/report":
-		// Проверяем, что это админ
 		cfg := configs.LoadConfig()
 		if chatID != cfg.AdminID {
 			msg := tgbotapi.NewMessage(chatID, "⛔ У вас нет прав на эту команду.")
@@ -62,12 +60,16 @@ func (h *MessageHandler) HandleMessage(message *tgbotapi.Message) error {
 		}
 		return h.BookingHandler.SendReport(chatID)
 
+	case "🚀 Начать":
+		return h.Start(message)
+
 	case "📅 Записаться":
 		return h.BookingHandler.StartBooking(chatID)
+
 	case "📋 Мои записи":
-		// Отменяем сессию, если она есть
 		h.BookingHandler.SessionService.DeleteSession(chatID)
 		return h.BookingHandler.ShowMyBookings(chatID)
+
 	case "ℹ️ О нас":
 		h.BookingHandler.SessionService.DeleteSession(chatID)
 		msg := tgbotapi.NewMessage(chatID, "💅 Nail Studio — профессиональный маникюрный салон.\n\n"+
@@ -76,19 +78,17 @@ func (h *MessageHandler) HandleMessage(message *tgbotapi.Message) error {
 			"👤 Мастер: Инесса")
 		_, err := h.Bot.Send(msg)
 		return err
+
 	case "📞 Контакты":
 		h.BookingHandler.SessionService.DeleteSession(chatID)
 		msg := tgbotapi.NewMessage(chatID, "📞 Контакты:\n\n"+
 			"📱 +7 (999) 123-45-67\n"+
 			"📍 ул. Губаревича, д. 5\n"+
 			"🌐 @nail_studio")
-
 		msg.ReplyMarkup = keyboards.ContactKeyboard()
-
 		_, err := h.Bot.Send(msg)
 		return err
 
-	//13.07
 	case "📊 Отчёт":
 		if chatID != cfg.AdminID {
 			msg := tgbotapi.NewMessage(chatID, "⛔ У вас нет прав.")
